@@ -12,6 +12,8 @@ typedef struct s_data
 {
     int times[5];
     int philo_index;
+    pthread_t *philo;
+    pthread_mutex_t *forks;
 } t_data;
 
 int all_num(char *str);

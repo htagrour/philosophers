@@ -9,38 +9,35 @@ long int get_time_ms()
 void eat(void *data)
 {
 
-    printf("%ld X  is eating\n", get_time_ms());
-    usleep(10);
+    printf("%ld %d  is eating\n", get_time_ms(), (*(t_data *)data).philo_index);
+    usleep(100000);
 }
 
 void sleeep(void *data)
 {
-    printf("%ld X  is sleeping\n", get_time_ms());
-    usleep(10);
-
+    printf("%ld %d  is sleeping\n", get_time_ms(), (*(t_data *)data).philo_index);
+    usleep(100000);
 }
 
 void think(void *data)
 {
-    printf("%ld X  is thinking\n", get_time_ms());
-    usleep(10);
-
+    printf("%ld %d  is thinking\n", get_time_ms(), (*(t_data *)data).philo_index);
+    usleep(100000);
 }
 
 void *Philosopher(void *data)
 {
-    eat(data);
-    sleeep(data);
-    think(data);
+    while (1)
+    {
+        eat(data);
+        think(data);
+        sleeep(data);
+    }
     return (NULL);
 }
 
-
-
 int main(int rc, char **args)
 {
-    pthread_t *philo;
-    pthread_mutex_t *forks;
     int i, j;
     t_data data;
 
@@ -49,12 +46,12 @@ int main(int rc, char **args)
         printf("ARG ERROR\n");
         return (1);
     }
-    philo = malloc(sizeof(pthread_t) * data.times[0]);
-    forks = malloc(sizeof(pthread_mutex_t) * data.times[0]);
+    data.philo = malloc(sizeof(pthread_t) * data.times[0]);
+    data.forks = malloc(sizeof(pthread_mutex_t) * data.times[0]);
     i = -1;
     while (++i < data.times[0])
     {
-        if (pthread_mutex_init(&forks[i], NULL))
+        if (pthread_mutex_init(&data.forks[i], NULL))
         {
             printf("MUTEX INIT HAS FAILED !!\n");
             return (1);
@@ -63,7 +60,8 @@ int main(int rc, char **args)
     i = -1;
     while (++i < data.times[0])
     {
-        if (pthread_create(&philo[i], NULL, Philosopher, &data))
+        data.philo_index = i + 1;
+        if (pthread_create(&data.philo[i], NULL, Philosopher, &data))
         {
             printf("THREAD CREATE HAS FAILED !!\n");
             return (1);
@@ -72,7 +70,7 @@ int main(int rc, char **args)
     i = -1;
     while (++i < data.times[0])
     {
-        if (pthread_join(philo[i], NULL))
+        if (pthread_join(data.philo[i], NULL))
         {
             printf("THREAD CREATE HAS FAILED !!\n");
             return (1);
