@@ -1,65 +1,68 @@
 #include "philosopher.h"
-long int get_time_ms()
-{
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-    return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000);
-}
-long long get_time_mic()
-{
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-    return (current_time.tv_sec * 1000000 + current_time.tv_usec);
-}
 
-void eat(void *data)
+void eat(t_philosopher *ph)
 {
-    pthread_mutex_lock(&(((t_philosopher*)data)->common_data->write_lock));
-    printf("%ld %d  is eating\n", get_time_ms(),  ((t_philosopher *)data)->id + 1);
-    pthread_mutex_unlock(&(((t_philosopher*)data)->common_data->write_lock));
-    usleep(100);
+    pthread_mutex_lock(&ph->common_data->write_lock);
+    printf("%lld %d  is eating\n", get_time_ms() - ph->common_data->start,  ph->id + 1);
+    pthread_mutex_unlock(&ph->common_data->write_lock);
+    ph->last_eat_time = get_time_mic();
+    ph->eat_time++;
+    my_sleep(2, *ph);
+
 
 }
 
-void sleeep(void *data)
+void sleeep(t_philosopher *ph)
 {
-    pthread_mutex_lock(&(((t_philosopher*)data)->common_data->write_lock));
-    printf("%ld %d  is sleeping\n", get_time_ms(),  ((t_philosopher *)data)->id + 1);
-    pthread_mutex_unlock(&(((t_philosopher*)data)->common_data->write_lock));
-    usleep(100);
+    pthread_mutex_lock(&ph->common_data->write_lock);
+    printf("%lld %d  is sleeping\n", get_time_ms() - ph->common_data->start,  ph->id + 1);
+     pthread_mutex_unlock(&ph->common_data->write_lock);
+     my_sleep(3, *ph);
+}
 
-}
-void died(void *data)
+void think(t_philosopher *ph)
 {
-    pthread_mutex_lock(&(((t_philosopher*)data)->common_data->write_lock));
-    printf("%ld %d  died\n", get_time_ms(),  ((t_philosopher *)data)->id + 1);
-    pthread_mutex_unlock(&(((t_philosopher*)data)->common_data->write_lock));
-    usleep(100);
+    pthread_mutex_lock(&ph->common_data->write_lock);
+    printf("%lld %d  is think\n", get_time_ms() - ph->common_data->start,  ph->id + 1);
+    pthread_mutex_unlock(&ph->common_data->write_lock);
 }
-void think(void *data)
+int condition(t_philosopher *ph)
 {
-    pthread_mutex_lock(&(((t_philosopher*)data)->common_data->write_lock));
-    printf("%ld %d  is think\n", get_time_ms(),  ((t_philosopher *)data)->id + 1);
-    pthread_mutex_unlock(&(((t_philosopher*)data)->common_data->write_lock));
-    usleep(100);
+    if (ph->common_data->died)
+        return (0);
+    if (get_time_mic() - ph->last_eat_time > ph->common_data->times[1] * 1000)
+    {
+        printf("%lld %d  died\n", get_time_ms() - ph->common_data->start,  ph->id + 1);
+        ph->common_data->died = 1;
+        return (0);
+    }
+    if (ph->common_data->times[4] > 0 && ph->eat_time >= ph->common_data->times[4])
+        return (0);
+    return (1);
 }
 
 void *Philosopher(void *data)
 {
-    int id = ((t_philosopher*)data)->id;
-    pthread_mutex_t* mutex = ((t_philosopher*)data)->common_data->forks;
-    int philo_num = ((t_philosopher*)data)->common_data->times[0];
-    while (1)
+    t_philosopher *ph = ((t_philosopher*)data);
+    int id = ph->id;
+    pthread_mutex_t* mutex = ph->common_data->forks;
+    int philo_num = ph->common_data->times[0];
+    while (condition(ph))
     {
+        /*
+            pickup forks
+        */
         pthread_mutex_lock(&mutex[id]);
         pthread_mutex_lock(&mutex[(id + 1) % philo_num]);
 
-        eat(data);
-        // relase_forks();
+        eat(ph);
+        /* 
+            drop forks
+        */
         pthread_mutex_unlock(&mutex[(id + 1) % philo_num]);
         pthread_mutex_unlock(&mutex[id]);
-        think(data);
-        sleeep(data);
+        sleeep(ph);
+        think(ph);
         
     }
     return (NULL);
@@ -67,7 +70,7 @@ void *Philosopher(void *data)
 
 int main(int rc, char **args)
 {
-    int i, j;
+    int i;
     t_data data;
     t_philosopher *philosophers;
 
@@ -76,6 +79,7 @@ int main(int rc, char **args)
         printf("ARG ERROR\n");
         return (1);
     }
+    
     philosophers = malloc(sizeof(t_philosopher) * data.times[0]);
     data.forks = malloc(sizeof(pthread_mutex_t) * data.times[0]);
 
@@ -99,7 +103,10 @@ int main(int rc, char **args)
     while (++i < data.times[0])
     {
         philosophers[i].id = i;
+        philosophers[i].eat_time = 0;
         philosophers[i].common_data = &data;
+        philosophers[i].last_eat_time = get_time_mic();
+        philosophers[i].common_data->start = get_time_ms();
         if (pthread_create(&(philosophers[i].thread), NULL, Philosopher, &philosophers[i]))
         {
             printf("THREAD CREATE HAS FAILED !!\n");

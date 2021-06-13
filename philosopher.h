@@ -11,8 +11,10 @@
 typedef struct s_data
 {
     int times[5];
+    int died;
     pthread_mutex_t write_lock;
     pthread_mutex_t *forks;
+    long long start;
 } t_data;
 
 typedef struct s_philosopher
@@ -28,4 +30,7 @@ typedef struct s_philosopher
 
 int all_num(char *str);
 int init_data(int rc, char **args, t_data *data);
+long int get_time_ms();
+long long get_time_mic();
+void my_sleep(int index, t_philosopher ph);
 #endif
