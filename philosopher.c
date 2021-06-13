@@ -114,6 +114,7 @@ int main(int rc, char **args)
         }
         usleep(100);
     }
+    // check if someone died or not;
     i = -1;
     while (++i < data.times[0])
     {
