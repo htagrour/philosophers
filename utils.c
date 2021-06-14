@@ -1,55 +1,61 @@
 #include "philosopher.h"
 
-long int get_time_ms()
+long int	get_time_ms(void)
 {
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-    return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000);
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return (current_time.tv_sec * 1000 + current_time.tv_usec / 1000);
 }
 
-long long get_time_mic()
+long long	get_time_mic(void)
 {
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-    return (current_time.tv_sec * 1000000 + current_time.tv_usec);
+	struct timeval	current_time;
+
+	gettimeofday(&current_time, NULL);
+	return (current_time.tv_sec * 1000000 + current_time.tv_usec);
 }
 
-void my_sleep(int index, t_philosopher ph)
+void	my_sleep(int index, t_philosopher ph)
 {
-    long long microb;
-    microb = get_time_mic();
-    usleep(ph.common_data->times[index] * 1000 - 15000);
-    while (get_time_mic() - microb < ph.common_data->times[index] * 1000);
+	long long	microb;
+
+	microb = get_time_mic();
+	usleep(ph.common_data->times[index] * 1000 - 15000);
+	while (get_time_mic() - microb < ph.common_data->times[index] * 1000)
+	{
+	}
 }
 
-int all_num(char *str)
+int	all_num(char *str)
 {
-    while (*str)
-    {
-        if (!ft_isdigit(*str))
-            return (0);
-        str++;
-    }
-    return (1);
+	while (*str)
+	{
+		if (!ft_isdigit(*str))
+			return (0);
+		str++;
+	}
+	return (1);
 }
 
-int init_data(int rc, char **args, t_data *data)
+int	init_data(int rc, char **args, t_data *data)
 {
-    int i;
-    if (rc < 5 || rc > 6)
-        return (0);
-    args++;
-    i = 0;
-    data->died = 0;
-    data->times[4] = -1;
-    while (*args)
-    {
-        if (!all_num(*args))
-            return (0);
-        data->times[i++] = ft_atoi(*args);
-        args++;
-    }
-    if (data->times[0] <= 0)
-        return (0);
-    return (1);
+	int	i;
+
+	if (rc < 5 || rc > 6)
+		return (0);
+	args++;
+	i = 0;
+	data->died = 0;
+	data->times[4] = -1;
+	while (*args)
+	{
+		if (!all_num(*args))
+			return (0);
+		data->times[i++] = ft_atoi(*args);
+		args++;
+	}
+	if (data->times[0] <= 0)
+		return (0);
+	return (1);
 }

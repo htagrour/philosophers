@@ -35,4 +35,8 @@ long long get_time_mic();
 void my_sleep(int index, t_philosopher ph);
 void *Philosopher(void *data);
 int wait_(t_philosopher *ph);
+int init_mutex(t_data *data);
+int create_threads(t_philosopher **philosophers, t_data *data);
+int join_threads(t_philosopher *philosophers, t_data data);
+void destroy_forks(t_data *data);
 #endif
