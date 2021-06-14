@@ -33,4 +33,6 @@ int init_data(int rc, char **args, t_data *data);
 long int get_time_ms();
 long long get_time_mic();
 void my_sleep(int index, t_philosopher ph);
+void *Philosopher(void *data);
+int wait_(t_philosopher *ph);
 #endif

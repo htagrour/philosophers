@@ -18,13 +18,13 @@ void my_sleep(int index, t_philosopher ph)
 {
     long long microb;
     microb = get_time_mic();
-    usleep(ph.common_data->times[2] * 1000 - 15000);
-    while (get_time_mic() - microb < ph.common_data->times[index] * 1000 );
+    usleep(ph.common_data->times[index] * 1000 - 15000);
+    while (get_time_mic() - microb < ph.common_data->times[index] * 1000);
 }
 
 int all_num(char *str)
 {
-    while(*str)
+    while (*str)
     {
         if (!ft_isdigit(*str))
             return (0);
@@ -49,5 +49,7 @@ int init_data(int rc, char **args, t_data *data)
         data->times[i++] = ft_atoi(*args);
         args++;
     }
+    if (data->times[0] <= 0)
+        return (0);
     return (1);
 }
